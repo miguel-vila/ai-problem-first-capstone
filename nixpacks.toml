@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs-18_x"]
+nixPkgs = ["nodejs-18_x", "python311"]
 
 [phases.build]
 cmds = ["bash build.sh"]
