@@ -96,15 +96,23 @@ This document outlines the technical choices made during the project setup that 
 - **Clarity**: `Procfile` clearly documents the start command
 - **Fallback**: If one configuration method fails, the other serves as backup
 
-### 2. Single Application Deployment
+### 2. Integrated Single-Service Deployment
 
-**Decision**: Configured Railway to deploy only the backend (frontend would be deployed separately or built into a static site).
+**Decision**: Configured Railway to deploy both frontend and backend as a single service, with FastAPI serving the built React frontend.
 
 **Rationale**:
-- **Separation of Concerns**: Backend and frontend are independent services
-- **Scalability**: Can scale backend and frontend independently
-- **Railway Best Practice**: Railway recommends separate services for frontend and backend
-- **Cost Efficiency**: Static frontend can be hosted on Vercel/Netlify for free
+- **Simplicity**: Single `railway up` command deploys everything
+- **Cost Efficiency**: One service instead of two reduces Railway costs
+- **Automatic Builds**: Railway automatically builds the frontend during deployment via `build.sh`
+- **No CORS Complexity**: Frontend and backend on same origin eliminates CORS configuration
+- **Monorepo Benefits**: Both parts of the application versioned and deployed together
+
+**Implementation Details**:
+- `build.sh`: Script that installs Node.js dependencies and builds the React app
+- `nixpacks.toml`: Ensures Railway installs both Python and Node.js
+- `backend/app/main.py`: Serves static files from `frontend/dist` using FastAPI's StaticFiles
+- Catch-all route serves `index.html` for client-side routing
+- API routes (defined first) take precedence over static file serving
 
 ### 3. Environment Variables Structure
 

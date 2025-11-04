@@ -54,31 +54,26 @@ uv run python main.py
 
 Visit http://localhost:8000/docs for the interactive API documentation (Swagger UI).
 
-## API Endpoints
+#### Option 3: Run production build locally (integrated frontend + backend)
 
-### `POST /generate-strategy`
+This mimics the production deployment where the backend serves the frontend:
 
-Generate an investment strategy based on user inputs.
+```bash
+# Build the frontend
+npm run build --prefix frontend
 
-**Request Body:**
-```json
-{
-  "ticker_symbol": "AAPL",
-  "risk_appetite": "Medium",
-  "investment_experience": "Intermediate",
-  "time_horizon": "Medium-term"
-}
+# Run the backend (which will serve the built frontend)
+uv run python main.py
 ```
 
-**Response:**
-```json
-{
-  "suggested_action": "Buy",
-  "reasoning": "Based on your profile..."
-}
-```
+Visit http://localhost:8000 to see the complete application!
 
 ## Deployment to Railway
+
+The application is configured for **single-service deployment** - Railway will automatically:
+1. Install Python and Node.js dependencies
+2. Build the React frontend
+3. Start the FastAPI backend (which serves the built frontend)
 
 ### Via Railway CLI
 
@@ -97,3 +92,5 @@ railway login
 railway init
 railway up
 ```
+
+Railway will execute the `build.sh` script to build the frontend before starting the backend server.

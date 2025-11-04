@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "python311"]
+
+[phases.install]
+cmds = [
+  "pip install uv",
+  "uv sync"
+]
+
+[phases.build]
+cmds = ["bash build.sh"]
+
+[start]
+cmd = "python main.py"
