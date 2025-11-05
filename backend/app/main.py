@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
+from .workflow_agent import WorkflowAgent
 
-from .models import InvestmentRequest, InvestmentResponse, Action
+from .models import InvestmentRequest, InvestmentResponse
 
 # Load environment variables
 load_dotenv()
@@ -15,6 +16,8 @@ app = FastAPI(
     description="AI-powered investor assistant API",
     version="0.1.0"
 )
+
+workflow = WorkflowAgent()
 
 # Configure CORS for frontend communication
 app.add_middleware(
@@ -41,18 +44,15 @@ async def generate_strategy(request: InvestmentRequest):
     implemented in future iterations.
     """
     # Placeholder logic - to be replaced with actual AI implementation
-    reasoning = (
-        f"Based on your profile (Risk: {request.risk_appetite.value}, "
-        f"Experience: {request.investment_experience.value}, "
-        f"Horizon: {request.time_horizon.value}), "
-        f"this is a placeholder recommendation for {request.ticker_symbol}. "
-        "AI implementation coming soon."
-    )
-
-    return InvestmentResponse(
-        suggested_action=Action.NOT_BUY,
-        reasoning=reasoning
-    )
+    
+    response = workflow.invoke({
+        'ticker_symbol': request.ticker_symbol,
+        'risk_appetite': request.risk_appetite.value,
+        'investment_experience': request.investment_experience.value,
+        'time_horizon': request.time_horizon.value
+    })['response']
+        
+    return response
 
 
 # Serve static files from the frontend build (for production)

@@ -28,10 +28,11 @@ class InvestmentRequest(BaseModel):
 
 
 class Action(str, Enum):
+    """Possible actions for investment decisions."""
     BUY = "Buy"
     NOT_BUY = "Not Buy"
 
-
 class InvestmentResponse(BaseModel):
-    suggested_action: Action
+    """Final response model for investment suggestion based on the profile and the ticker symbol."""
+    suggested_action: Action = Field(..., description="Suggested investment action")
     reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
