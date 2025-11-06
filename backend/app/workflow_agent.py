@@ -1,5 +1,6 @@
 import json
 from backend.app.models import InvestmentResponse
+from backend.app.cache import OverviewCache
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_tavily import TavilySearch
@@ -52,6 +53,7 @@ class WorkflowAgent:
     overview_tool: BaseTool
     def __init__(self, overview_tool: BaseTool):
         self.overview_tool = overview_tool
+        self.overview_cache = OverviewCache(ttl_days=7)
         self.tavily_client = TavilySearch(
             max_results=10,
             include_answer=False,
@@ -111,8 +113,22 @@ class WorkflowAgent:
     
     async def get_overview(self, state: AdvisorState):
         symbol = state['ticker_symbol']
-        response = json.loads(await self.overview_tool.ainvoke({'symbol': symbol}))
-        print(f"Overview tool response: {response}, type: {type(response)}")
+
+        # Check cache first
+        cached_data = self.overview_cache.get(symbol)
+
+        if cached_data:
+            print(f"Using cached overview data for {symbol}")
+            response = cached_data
+        else:
+            # Cache miss, fetch from API
+            print(f"Cache miss for {symbol}, fetching from API")
+            response = json.loads(await self.overview_tool.ainvoke({'symbol': symbol}))
+            print(f"Overview tool response: {response}, type: {type(response)}")
+
+            # Store in cache
+            self.overview_cache.set(symbol, response)
+
         overview = Overview(
             description=response['Description'],
             market_capitalization=float(response['MarketCapitalization']),
