@@ -124,7 +124,6 @@ class WorkflowAgent:
             # Cache miss, fetch from API
             print(f"Cache miss for {symbol}, fetching from API")
             response = json.loads(await self.overview_tool.ainvoke({'symbol': symbol}))
-            print(f"Overview tool response: {response}, type: {type(response)}")
 
             # Store in cache
             self.overview_cache.set(symbol, response)
