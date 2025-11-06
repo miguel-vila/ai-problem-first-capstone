@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,19 +6,35 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from .workflow_agent import WorkflowAgent
-
 from .models import InvestmentRequest, InvestmentResponse
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
+from langchain_mcp_adapters.tools import load_mcp_tools
+from contextlib import asynccontextmanager
 
 # Load environment variables
 load_dotenv()
 
+alpha_vantage_api_key = os.getenv("ALPHA_VANTAGE_API_KEY")
+alpha_vantage_mcp_url = f'https://mcp.alphavantage.co/mcp?apikey={alpha_vantage_api_key}'
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with streamablehttp_client(alpha_vantage_mcp_url) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+
+            tools = await load_mcp_tools(session)
+            overview_tool = [tool for tool in tools if tool.name == 'COMPANY_OVERVIEW'][0]
+            app.state.workflow = WorkflowAgent(overview_tool=overview_tool)
+            yield
+    
 app = FastAPI(
     title="Trading Bot API",
     description="AI-powered investor assistant API",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
-
-workflow = WorkflowAgent()
 
 # Configure CORS for frontend communication
 app.add_middleware(
@@ -45,12 +62,12 @@ async def generate_strategy(request: InvestmentRequest):
     """
     # Placeholder logic - to be replaced with actual AI implementation
     
-    response = workflow.invoke({
+    response = (await app.state.workflow.ainvoke({
         'ticker_symbol': request.ticker_symbol,
         'risk_appetite': request.risk_appetite.value,
         'investment_experience': request.investment_experience.value,
         'time_horizon': request.time_horizon.value
-    })['response']
+    }))['response']
         
     return response
 
