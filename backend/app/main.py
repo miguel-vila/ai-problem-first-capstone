@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response
 from dotenv import load_dotenv
 from .workflow_agent import WorkflowAgent
-from .models import InvestmentRequest, InvestmentResponse
+from .models import InvestmentRequest, ServiceResponse
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 from langchain_mcp_adapters.tools import load_mcp_tools
@@ -52,7 +52,7 @@ async def health_check():
     return {"status": "healthy", "message": "Trading Bot API is running"}
 
 
-@app.post("/generate-strategy", response_model=InvestmentResponse)
+@app.post("/generate-strategy", response_model=ServiceResponse)
 async def generate_strategy(request: InvestmentRequest):
     """
     Generate investment strategy based on user inputs.
@@ -62,14 +62,18 @@ async def generate_strategy(request: InvestmentRequest):
     """
     # Placeholder logic - to be replaced with actual AI implementation
     
-    response = (await app.state.workflow.ainvoke({
+    workflow_result = await app.state.workflow.ainvoke({
         'ticker_symbol': request.ticker_symbol,
         'risk_appetite': request.risk_appetite.value,
         'investment_experience': request.investment_experience.value,
         'time_horizon': request.time_horizon.value
-    }))['response']
+    })
         
-    return response
+    return ServiceResponse(
+        suggested_action=workflow_result['response'].suggested_action,
+        reasoning=workflow_result['response'].reasoning,
+        sources=workflow_result['recent_news_summary_result'].sources
+    )
 
 
 @app.get("/workflow-graph")
