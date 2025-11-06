@@ -9,6 +9,10 @@ export default defineConfig({
       '/generate-strategy': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+      },
+      '/workflow-graph': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
       }
     }
   }

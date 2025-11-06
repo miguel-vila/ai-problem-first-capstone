@@ -11,6 +11,7 @@ function App() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showWorkflow, setShowWorkflow] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -113,6 +114,25 @@ function App() {
             {loading ? 'Generating...' : 'Generate Strategy'}
           </button>
         </form>
+
+        <div className="workflow-section">
+          <button
+            className="workflow-toggle"
+            onClick={() => setShowWorkflow(!showWorkflow)}
+          >
+            {showWorkflow ? '▼' : '▶'} View Workflow Graph
+          </button>
+
+          {showWorkflow && (
+            <div className="workflow-graph">
+              <img
+                src="/workflow-graph"
+                alt="Workflow Graph"
+                className="graph-image"
+              />
+            </div>
+          )}
+        </div>
 
         {error && (
           <div className="result error">

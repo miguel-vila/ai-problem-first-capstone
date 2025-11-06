@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from dotenv import load_dotenv
 from .workflow_agent import WorkflowAgent
 from .models import InvestmentRequest, InvestmentResponse
@@ -70,6 +70,30 @@ async def generate_strategy(request: InvestmentRequest):
     }))['response']
         
     return response
+
+
+@app.get("/workflow-graph")
+async def get_workflow_graph():
+    """
+    Generate and return a visualization of the workflow graph.
+    Returns a PNG image of the LangGraph workflow.
+    """
+    try:
+        # Get the graph from the workflow agent
+        graph = app.state.workflow.graph.get_graph()
+
+        # Generate PNG image using Mermaid
+        png_bytes = graph.draw_mermaid_png()
+
+        # Return as PNG image
+        return Response(content=png_bytes, media_type="image/png")
+    except Exception as e:
+        # If graph generation fails, return an error
+        return Response(
+            content=f"Error generating graph: {str(e)}",
+            status_code=500,
+            media_type="text/plain"
+        )
 
 
 # Serve static files from the frontend build (for production)
