@@ -66,7 +66,7 @@ class WorkflowAgent:
         prompt = ChatPromptTemplate.from_template("""You are a research assistant that helps users decide on investment strategies.
         You will analyze recent news and stock performance for a given ticker symbol.
         Based on this information and the user's risk appetite, investment experience, and time horizon,
-        you will suggest an investment action: BUY, SELL, or NOT_BUY.
+        you will suggest an investment action: BUY, or NOT_BUY.
         Provide a detailed reasoning for your suggestion.
         
         Ticker Symbol: {ticker_symbol}
