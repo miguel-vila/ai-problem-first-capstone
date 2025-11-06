@@ -133,6 +133,19 @@ function App() {
             </div>
           </div>
         )}
+
+        <footer className="footer">
+          <p>
+            View the source code on{' '}
+            <a
+              href="https://github.com/miguel-vila/ai-problem-first-capstone?tab=readme-ov-file#trading-bot---ai-powered-investor-assistant"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </p>
+        </footer>
       </div>
     </div>
   )
