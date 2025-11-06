@@ -81,12 +81,12 @@ class WorkflowAgent:
         graph_builder = StateGraph(AdvisorState)
         graph_builder.add_node('recent_news', self.recent_news)
         graph_builder.add_node('web_search_results_summarization', self.web_search_results_summarization)
-        graph_builder.add_node('get_overview', self.get_overview)
+        graph_builder.add_node('get_overview_indicators', self.get_overview_indicators)
         graph_builder.add_node('investment_suggestion', self.investment_suggestion)
         graph_builder.add_edge(START, 'recent_news')
-        graph_builder.add_edge(START, 'get_overview')
+        graph_builder.add_edge(START, 'get_overview_indicators')
         graph_builder.add_edge('recent_news', 'web_search_results_summarization')
-        graph_builder.add_edge(start_key=['web_search_results_summarization', 'get_overview'], end_key='investment_suggestion')
+        graph_builder.add_edge(start_key=['web_search_results_summarization', 'get_overview_indicators'], end_key='investment_suggestion')
         # graph_builder.set_entry_point(START)
         graph_builder.set_finish_point('investment_suggestion')
         self.graph = graph_builder.compile()
@@ -111,7 +111,7 @@ class WorkflowAgent:
         })
         return {'recent_news_summary': summary}
     
-    async def get_overview(self, state: AdvisorState):
+    async def get_overview_indicators(self, state: AdvisorState):
         symbol = state['ticker_symbol']
 
         # Check cache first
