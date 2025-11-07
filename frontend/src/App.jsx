@@ -5,7 +5,6 @@ function App() {
   const [formData, setFormData] = useState({
     ticker_symbol: '',
     risk_appetite: 'Medium',
-    investment_experience: 'Intermediate',
     time_horizon: 'Medium-term'
   })
   const [result, setResult] = useState(null)
@@ -51,8 +50,8 @@ function App() {
   return (
     <div className="app">
       <div className="container">
-        <h1>Trading Bot - Investor Assistant</h1>
-        <p className="subtitle">Get AI-powered investment recommendations</p>
+        <h1>Trading Bot - Educational Stock Analysis</h1>
+        <p className="subtitle">Learn about stock analysis with AI-powered insights</p>
 
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">
@@ -69,49 +68,47 @@ function App() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="risk_appetite">Risk Appetite</label>
+            <label htmlFor="risk_appetite">
+              Risk Tolerance Scenario
+              <span className="field-help">For educational comparison</span>
+            </label>
             <select
               id="risk_appetite"
               name="risk_appetite"
               value={formData.risk_appetite}
               onChange={handleChange}
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="Low">Conservative (Low Volatility Tolerance)</option>
+              <option value="Medium">Moderate (Medium Volatility Tolerance)</option>
+              <option value="High">Aggressive (High Volatility Tolerance)</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="investment_experience">Investment Experience</label>
-            <select
-              id="investment_experience"
-              name="investment_experience"
-              value={formData.investment_experience}
-              onChange={handleChange}
-            >
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Expert">Expert</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="time_horizon">Time Horizon</label>
+            <label htmlFor="time_horizon">
+              Investment Timeline Scenario
+              <span className="field-help">For educational comparison</span>
+            </label>
             <select
               id="time_horizon"
               name="time_horizon"
               value={formData.time_horizon}
               onChange={handleChange}
             >
-              <option value="Short-term">Short-term</option>
-              <option value="Medium-term">Medium-term</option>
-              <option value="Long-term">Long-term</option>
+              <option value="Short-term">Short-term (Under 1 year)</option>
+              <option value="Medium-term">Medium-term (1-5 years)</option>
+              <option value="Long-term">Long-term (5+ years)</option>
             </select>
           </div>
 
+          <div className="scenario-info">
+            💡 <strong>About These Scenarios:</strong> These parameters help you explore how different
+            investment profiles might evaluate this stock. This is for educational purposes to help you
+            understand different analytical perspectives.
+          </div>
+
           <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Generating...' : 'Generate Strategy'}
+            {loading ? 'Analyzing...' : 'Generate Educational Analysis'}
           </button>
         </form>
 
@@ -143,18 +140,45 @@ function App() {
 
         {result && (
           <div className="result success">
-            <h2>Investment Recommendation</h2>
+            <h2>Stock Analysis Result</h2>
             <div className="action">
-              <strong>Suggested Action:</strong> {result.suggested_action}
+              <strong>Analysis Suggestion:</strong> {result.suggested_action}
             </div>
             <div className="reasoning">
-              <strong>Reasoning:</strong>
+              <strong>Educational Reasoning:</strong>
               <p>{result.reasoning}</p>
+            </div>
+            {result.sources && result.sources.length > 0 && (
+              <div className="sources">
+                <strong>Sources:</strong>
+                <ul>
+                  {result.sources.map((source, index) => (
+                    <li key={index}>
+                      <a href={source.url} target="_blank" rel="noopener noreferrer">
+                        {source.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="result-warning">
+              <strong>⚠️ Remember:</strong> This is educational content only. Consult a licensed financial adviser before making any investment decisions.
             </div>
           </div>
         )}
 
         <footer className="footer">
+          <div className="footer-disclaimer">
+            <p className="footer-disclaimer-text">
+              <strong>Legal Disclaimer:</strong> This application provides educational information only and is not intended
+              to be investment advice. The creators and operators are not licensed financial advisers, brokers, or investment
+              professionals. All stock analysis and suggestions are for educational and informational purposes only.
+              Users should conduct their own research and consult with qualified financial professionals before making any
+              investment decisions. We make no representations or warranties regarding the accuracy or completeness of the
+              information provided. Use of this tool is at your own risk.
+            </p>
+          </div>
           <p>
             View the source code on{' '}
             <a

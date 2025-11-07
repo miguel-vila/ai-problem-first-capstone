@@ -65,7 +65,6 @@ async def generate_strategy(request: InvestmentRequest, response: Response):
     workflow_result = await app.state.workflow.ainvoke({
         'ticker_symbol': request.ticker_symbol,
         'risk_appetite': request.risk_appetite,
-        'investment_experience': request.investment_experience,
         'time_horizon': request.time_horizon
     })
     if 'guardrail_override' in workflow_result:

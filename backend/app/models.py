@@ -23,7 +23,6 @@ class TimeHorizon(str, Enum):
 class InvestmentRequest(BaseModel):
     ticker_symbol: str = Field(..., description="Stock ticker symbol (e.g., AAPL, MSFT)")
     risk_appetite: RiskAppetite
-    investment_experience: InvestmentExperience
     time_horizon: TimeHorizon
 
 
@@ -37,10 +36,14 @@ class InvestmentResponse(BaseModel):
     suggested_action: Action = Field(..., description="Suggested investment action")
     reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
     
+class SummarizedSearchResult(BaseModel):
+    title: str = Field(..., description="Title of the news")
+    url: str = Field(..., description="URL of the news")
+
 class ServiceResponse(BaseModel):
     suggested_action: Action = Field(..., description="Suggested investment action")
     reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
-    sources: Optional[List[str]] = Field(None, description="Sources of information used for the suggestion")
+    sources: Optional[List[SummarizedSearchResult]] = Field(None, description="Sources of information used for the suggestion")
     guardrail_override: Optional[InvestmentResponse] = Field(None, description="Override response if any guardrail was triggered")
 
 class WebSearchResult(BaseModel):
@@ -53,7 +56,7 @@ class WebSearchResult(BaseModel):
 
 class SummaryResponse(BaseModel):
     summary: str = Field(..., description="Summary of recent news articles")
-    sources: List[str] = Field(..., description="Sources of the news articles")
+    sources: List[SummarizedSearchResult] = Field(..., description="Sources of the news articles")
 
 class Overview(BaseModel):
     description: str
@@ -87,7 +90,6 @@ class Overview(BaseModel):
 class AdvisorState(TypedDict):
     ticker_symbol: str
     risk_appetite: RiskAppetite
-    investment_experience: InvestmentExperience
     time_horizon: TimeHorizon
     recent_news_results: list[WebSearchResult]
     recent_news_summary_result: SummaryResponse

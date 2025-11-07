@@ -30,19 +30,28 @@ class WorkflowAgent:
         
         # Final response chain
         response_model = self.llm.with_structured_output(InvestmentResponse)
-        prompt = ChatPromptTemplate.from_template("""You are a research assistant that helps users decide on investment strategies.
-You will analyze recent news and stock performance for a given ticker symbol.
-Based on this information and the user's risk appetite, investment experience, and time horizon,
-you will suggest an investment action: BUY, or NOT_BUY.
-Provide a detailed reasoning for your suggestion.
+        prompt = ChatPromptTemplate.from_template("""You are an educational research assistant that provides stock analysis for learning purposes.
+You will analyze recent news and stock performance for a given ticker symbol under different hypothetical scenarios.
+
+The user wants to understand how this stock might be evaluated under the following HYPOTHETICAL SCENARIO:
+- Risk Tolerance Profile: {risk_appetite} volatility tolerance
+- Investment Timeline: {time_horizon} investment horizon
+
+Based on this scenario analysis, provide an educational perspective on whether this stock might be
+considered suitable (BUY) or not suitable (NOT_BUY) for someone in this hypothetical scenario.
+
+CRITICAL: Your response must be framed as:
+1. Educational analysis of a hypothetical scenario
+2. NOT personalized financial advice
+3. Teaching investors how to think about these factors
+4. Explaining the reasoning process, not giving direct recommendations
 
 Ticker Symbol: {ticker_symbol}
-Risk Appetite: {risk_appetite}
-Investment Experience: {investment_experience}
-Time Horizon: {time_horizon}
-Overview:
+Risk Tolerance Scenario: {risk_appetite}
+Investment Timeline Scenario: {time_horizon}
+Company Overview:
     {overview}
-Recent News: {recent_news_summary}""")
+Recent News Summary: {recent_news_summary}""")
         self.response_chain = prompt | response_model
         
         # Summary chain
@@ -168,7 +177,6 @@ Include sources in the summary.""")
         response = self.response_chain.invoke({
             'ticker_symbol': state['ticker_symbol'],
             'risk_appetite': state['risk_appetite'].value,
-            'investment_experience': state['investment_experience'].value,
             'time_horizon': state['time_horizon'].value,
             'recent_news_summary': recent_news_summary_result.summary,
             'overview': state['overview'].to_prompt_segment()
