@@ -41,6 +41,14 @@ class InvestmentResponse(BaseModel):
     """Final response model for investment suggestion based on the profile and the ticker symbol."""
     suggested_action: Action = Field(..., description="Suggested investment action")
     reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
+    
+class WebSearchResult(BaseModel):
+    title: str
+    content: str
+    url: str
+    
+    def to_prompt_segment(self, line_prefix: str = '          ') -> str:
+        return f"{line_prefix}- Title: {self.title}\n{line_prefix}  URL: {self.url}\n{line_prefix}  Content: {self.content}"
 
 class SummaryResponse(BaseModel):
     summary: str = Field(..., description="Summary of recent news articles")
@@ -77,10 +85,10 @@ class Overview(BaseModel):
     
 class AdvisorState(TypedDict):
     ticker_symbol: str
-    risk_appetite: str
-    investment_experience: str
-    time_horizon: str
-    recent_news_results: str
+    risk_appetite: RiskAppetite
+    investment_experience: InvestmentExperience
+    time_horizon: TimeHorizon
+    recent_news_results: list[WebSearchResult]
     recent_news_summary_result: SummaryResponse
     overview: Overview
     response: InvestmentResponse

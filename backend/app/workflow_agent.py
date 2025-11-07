@@ -7,7 +7,7 @@ from langchain_tavily import TavilySearch
 from langgraph.graph import StateGraph
 from langchain_core.tools.base import BaseTool
 from langgraph.constants import START
-from .models import Overview, AdvisorState, SummaryResponse
+from .models import Overview, AdvisorState, SummaryResponse, WebSearchResult
 import opik
 
 class WorkflowAgent:
@@ -27,26 +27,25 @@ class WorkflowAgent:
         # Final response chain
         response_model = self.llm.with_structured_output(InvestmentResponse)
         prompt = ChatPromptTemplate.from_template("""You are a research assistant that helps users decide on investment strategies.
-        You will analyze recent news and stock performance for a given ticker symbol.
-        Based on this information and the user's risk appetite, investment experience, and time horizon,
-        you will suggest an investment action: BUY, or NOT_BUY.
-        Provide a detailed reasoning for your suggestion.
-        
-        Ticker Symbol: {ticker_symbol}
-        Risk Appetite: {risk_appetite}
-        Investment Experience: {investment_experience}
-        Time Horizon: {time_horizon}
-        Overview:
-          {overview}
-        Recent News: {recent_news_summary}
-        """)
+You will analyze recent news and stock performance for a given ticker symbol.
+Based on this information and the user's risk appetite, investment experience, and time horizon,
+you will suggest an investment action: BUY, or NOT_BUY.
+Provide a detailed reasoning for your suggestion.
+
+Ticker Symbol: {ticker_symbol}
+Risk Appetite: {risk_appetite}
+Investment Experience: {investment_experience}
+Time Horizon: {time_horizon}
+Overview:
+    {overview}
+Recent News: {recent_news_summary}""")
         self.response_chain = prompt | response_model
         
         # Summary chain
         summary_prompt = ChatPromptTemplate.from_template("""Summarize the following news articles about {ticker_symbol} stock:
-        {recent_news_results}
-        Provide key insights relevant to investment decisions.
-        Include sources in the summary.""")
+{recent_news_results}
+Provide key insights relevant to investment decisions.
+Include sources in the summary.""")
         self.summary_chain = summary_prompt | self.llm.with_structured_output(SummaryResponse)
         
         # Build workflow graph
@@ -76,12 +75,21 @@ class WorkflowAgent:
     def recent_news(self, state: AdvisorState):
         search_query = f"Recent news about {state['ticker_symbol']} stock"
         results = self.tavily_client.invoke({'query': search_query})['results']
-        return {'recent_news_results': results}
-    
+        web_search_results: list[WebSearchResult] = []
+        for result in results:
+            web_search_results.append(WebSearchResult(
+                title=result['title'],
+                url=result['url'],
+                content=result['content']
+            ))
+        return {'recent_news_results': web_search_results}
+
     def web_search_results_summarization(self, state: AdvisorState):
+        recent_news_results = state['recent_news_results']
+        recent_news_results_str = "\n".join([res.to_prompt_segment() for res in recent_news_results])
         summary = self.summary_chain.invoke({
             'ticker_symbol': state['ticker_symbol'],
-            'recent_news_results': state['recent_news_results']
+            'recent_news_results': recent_news_results_str
         })
         return {'recent_news_summary_result': summary}
     
@@ -121,9 +129,9 @@ class WorkflowAgent:
         recent_news_summary_result = state['recent_news_summary_result']
         response = self.response_chain.invoke({
             'ticker_symbol': state['ticker_symbol'],
-            'risk_appetite': state['risk_appetite'],
-            'investment_experience': state['investment_experience'],
-            'time_horizon': state['time_horizon'],
+            'risk_appetite': state['risk_appetite'].value,
+            'investment_experience': state['investment_experience'].value,
+            'time_horizon': state['time_horizon'].value,
             'recent_news_summary': recent_news_summary_result.summary,
             'overview': state['overview'].to_prompt_segment()
         })
