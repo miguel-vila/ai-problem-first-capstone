@@ -94,3 +94,4 @@ class AdvisorState(TypedDict):
     overview: Overview
     response: InvestmentResponse
     guardrails_override: Optional[InvestmentResponse]
+    trace_id: str

@@ -1,4 +1,5 @@
 import json
+import traceback
 from typing import Optional
 from backend.app.models import InvestmentResponse
 from backend.app.cache import OverviewCache
@@ -10,12 +11,14 @@ from langchain_core.tools.base import BaseTool
 from langgraph.constants import START
 from .models import Action, Overview, AdvisorState, RiskAppetite, SummaryResponse, WebSearchResult
 import opik
+from opik.rest_api.types.guardrail_write import GuardrailWrite
 
 class WorkflowAgent:
     overview_tool: BaseTool
     def __init__(self, overview_tool: BaseTool):
         self.overview_tool = overview_tool
         self.overview_cache = OverviewCache(ttl_days=7)
+        self.opik_client = opik.Opik()
         self.tavily_client = TavilySearch(
             max_results=10,
             include_answer=False,
@@ -72,6 +75,7 @@ Include sources in the summary.""")
         This method is decorated with @opik.track to automatically log
         inputs, outputs, and execution traces for evaluation.
         """
+        state['trace_id'] = opik.opik_context.get_current_trace_data().id
         result = await self.graph.ainvoke(state)
         return result
 
@@ -129,9 +133,35 @@ Include sources in the summary.""")
         return {'overview': overview}
     
     def risk_appetite_beta_guardrail(self, state: AdvisorState):
-        if state['response'].suggested_action == Action.BUY and state['risk_appetite'] in [RiskAppetite.LOW] and state['overview'].beta > 1.0:
-            return {'guardrails_override': { 'action': 'NOT_BUY', 'reasoning': 'High beta stock not suitable for low risk appetite'}}
-        return state
+        guardrail_span = self.opik_client.span(name="Guardrail", input={"response": state['response']}, type="guardrail", trace_id=state['trace_id'])
+        failed = state['response'].suggested_action == Action.BUY and state['risk_appetite'] in [RiskAppetite.LOW] and state['overview'].beta and state['overview'].beta > 1.0
+        failure_reason = 'High beta stock not suitable for low risk appetite'
+        if failed:
+            guardrail_result = 'failed'
+            guardrail_output = { 'guardrail_result': guardrail_result, 'reason': failure_reason }
+        else:
+            guardrail_result = 'passed'
+            guardrail_output = { 'guardrail_result': guardrail_result }
+        guardrail_span.end(output=guardrail_output)
+        
+        guardrail_data = GuardrailWrite(
+            entity_id = state['trace_id'],
+            secondary_id = guardrail_span.id,
+            project_name = self.opik_client._project_name,
+            name = "TOPIC",
+            result = guardrail_result,
+            config = {"stock": state['ticker_symbol'], "risk_appetite": state['risk_appetite'].value, "beta": state['overview'].beta},
+            details = guardrail_output,
+        )
+
+        try:
+            self.opik_client.rest_client.guardrails.create_guardrails(guardrails=[guardrail_data])
+        except Exception as e:
+            traceback.print_exc()
+        if failed:
+            return {'guardrail_override': { 'suggested_action': Action.NOT_BUY, 'reason': failure_reason }}
+        else:
+            return {}
     
     def investment_suggestion(self, state: AdvisorState):
         recent_news_summary_result = state['recent_news_summary_result']
