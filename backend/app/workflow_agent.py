@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 from backend.app.models import InvestmentResponse
 from backend.app.cache import OverviewCache
 from langchain.chat_models import init_chat_model
@@ -7,7 +8,7 @@ from langchain_tavily import TavilySearch
 from langgraph.graph import StateGraph
 from langchain_core.tools.base import BaseTool
 from langgraph.constants import START
-from .models import Overview, AdvisorState, SummaryResponse, WebSearchResult
+from .models import Action, Overview, AdvisorState, RiskAppetite, SummaryResponse, WebSearchResult
 import opik
 
 class WorkflowAgent:
@@ -54,11 +55,13 @@ Include sources in the summary.""")
         graph_builder.add_node('web_search_results_summarization', self.web_search_results_summarization)
         graph_builder.add_node('get_overview_indicators', self.get_overview_indicators)
         graph_builder.add_node('investment_suggestion', self.investment_suggestion)
+        graph_builder.add_node('risk_appetite_beta_guardrail', self.risk_appetite_beta_guardrail)
         graph_builder.add_edge(START, 'recent_news')
         graph_builder.add_edge(START, 'get_overview_indicators')
         graph_builder.add_edge('recent_news', 'web_search_results_summarization')
         graph_builder.add_edge(start_key=['web_search_results_summarization', 'get_overview_indicators'], end_key='investment_suggestion')
-        graph_builder.set_finish_point('investment_suggestion')
+        graph_builder.add_edge('investment_suggestion', 'risk_appetite_beta_guardrail')
+        graph_builder.set_finish_point('risk_appetite_beta_guardrail')
         self.graph = graph_builder.compile()
 
     @opik.track(name="investment_workflow")
@@ -112,18 +115,23 @@ Include sources in the summary.""")
 
         overview = Overview(
             description=response['Description'],
-            market_capitalization=float(response['MarketCapitalization']),
-            pe_ratio=float(response['PERatio']),
-            peg_ratio=float(response['PEGRatio']),
-            book_value=float(response['BookValue']),
-            dividend_yield=float(response['DividendYield']),
-            dividend_per_share=float(response['DividendPerShare']),
-            eps=float(response['EPS']),
-            beta=float(response['Beta']),
+            market_capitalization=maybe_float_from_str(response['MarketCapitalization']),
+            pe_ratio=maybe_float_from_str(response['PERatio']),
+            peg_ratio=maybe_float_from_str(response['PEGRatio']),
+            book_value=maybe_float_from_str(response['BookValue']),
+            dividend_yield=maybe_float_from_str(response['DividendYield']),
+            dividend_per_share=maybe_float_from_str(response['DividendPerShare']),
+            eps=maybe_float_from_str(response['EPS']),
+            beta=maybe_float_from_str(response['Beta']),
             sector=response['Sector'],
             industry=response['Industry']
         )
         return {'overview': overview}
+    
+    def risk_appetite_beta_guardrail(self, state: AdvisorState):
+        if state['response'].suggested_action == Action.BUY and state['risk_appetite'] in [RiskAppetite.LOW] and state['overview'].beta > 1.0:
+            return {'guardrails_override': { 'action': 'NOT_BUY', 'reasoning': 'High beta stock not suitable for low risk appetite'}}
+        return state
     
     def investment_suggestion(self, state: AdvisorState):
         recent_news_summary_result = state['recent_news_summary_result']
@@ -136,3 +144,12 @@ Include sources in the summary.""")
             'overview': state['overview'].to_prompt_segment()
         })
         return {'response': response}
+
+
+def maybe_float_from_str(value: str) -> Optional[float]:
+    if value == 'None':
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None

@@ -53,7 +53,7 @@ async def health_check():
 
 
 @app.post("/generate-strategy", response_model=ServiceResponse)
-async def generate_strategy(request: InvestmentRequest):
+async def generate_strategy(request: InvestmentRequest, response: Response):
     """
     Generate investment strategy based on user inputs.
 
@@ -68,11 +68,20 @@ async def generate_strategy(request: InvestmentRequest):
         'investment_experience': request.investment_experience,
         'time_horizon': request.time_horizon
     })
+    if 'guardrail_override' in workflow_result:
+        response.status_code = 500
+        return ServiceResponse(
+            suggested_action=workflow_result['response'].suggested_action,
+            reasoning=workflow_result['response'].reasoning,
+            sources=workflow_result['recent_news_summary_result'].sources,
+            guardrail_override=workflow_result['guardrails_override']
+        )
         
     return ServiceResponse(
         suggested_action=workflow_result['response'].suggested_action,
         reasoning=workflow_result['response'].reasoning,
-        sources=workflow_result['recent_news_summary_result'].sources
+        sources=workflow_result['recent_news_summary_result'].sources,
+        guardrail_override=None
     )
 
 

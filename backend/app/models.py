@@ -32,16 +32,17 @@ class Action(str, Enum):
     BUY = "Buy"
     NOT_BUY = "Not Buy"
     
-class ServiceResponse(BaseModel):
-    suggested_action: Action = Field(..., description="Suggested investment action")
-    reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
-    sources: Optional[List[str]] = Field(None, description="Sources of information used for the suggestion")
-
 class InvestmentResponse(BaseModel):
     """Final response model for investment suggestion based on the profile and the ticker symbol."""
     suggested_action: Action = Field(..., description="Suggested investment action")
     reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
     
+class ServiceResponse(BaseModel):
+    suggested_action: Action = Field(..., description="Suggested investment action")
+    reasoning: str = Field(..., description="Detailed reasoning behind the suggested action")
+    sources: Optional[List[str]] = Field(None, description="Sources of information used for the suggestion")
+    guardrail_override: Optional[InvestmentResponse] = Field(None, description="Override response if any guardrail was triggered")
+
 class WebSearchResult(BaseModel):
     title: str
     content: str
@@ -56,28 +57,28 @@ class SummaryResponse(BaseModel):
 
 class Overview(BaseModel):
     description: str
-    market_capitalization: float
-    pe_ratio: float
-    peg_ratio: float
-    book_value: float
-    dividend_yield: float
-    dividend_per_share: float
-    eps: float
-    beta: float
+    market_capitalization: Optional[float]
+    pe_ratio: Optional[float]
+    peg_ratio: Optional[float]
+    book_value: Optional[float]
+    dividend_yield: Optional[float]
+    dividend_per_share: Optional[float]
+    eps: Optional[float]
+    beta: Optional[float]
     sector: str
     industry: str
     
     def to_prompt_segment(self, line_prefix: str = '          ') -> str:
         lines = [
             f"- Description: {self.description}",
-            f"- Market Capitalization: {self.market_capitalization}",
-            f"- P/E Ratio: {self.pe_ratio}",
-            f"- PEG Ratio: {self.peg_ratio}",
-            f"- Book Value: {self.book_value}",
-            f"- Dividend Yield: {self.dividend_yield}",
-            f"- Dividend Per Share: {self.dividend_per_share}",
-            f"- EPS: {self.eps}",
-            f"- Beta: {self.beta}",
+            f"- Market Capitalization: {self.market_capitalization or 'N/A'}",
+            f"- P/E Ratio: {self.pe_ratio or 'N/A'}",
+            f"- PEG Ratio: {self.peg_ratio or 'N/A'}",
+            f"- Book Value: {self.book_value or 'N/A'}",
+            f"- Dividend Yield: {self.dividend_yield or 'N/A'}",
+            f"- Dividend Per Share: {self.dividend_per_share or 'N/A'}",
+            f"- EPS: {self.eps or 'N/A'}",
+            f"- Beta: {self.beta or 'N/A'}",
             f"- Sector: {self.sector}",
             f"- Industry: {self.industry}",
         ]
@@ -92,3 +93,4 @@ class AdvisorState(TypedDict):
     recent_news_summary_result: SummaryResponse
     overview: Overview
     response: InvestmentResponse
+    guardrails_override: Optional[InvestmentResponse]
