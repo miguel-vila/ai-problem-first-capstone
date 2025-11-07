@@ -8,6 +8,7 @@ from langgraph.graph import StateGraph
 from langchain_core.tools.base import BaseTool
 from langgraph.constants import START
 from .models import Overview, AdvisorState, SummaryResponse
+import opik
 
 class WorkflowAgent:
     overview_tool: BaseTool
@@ -61,8 +62,16 @@ class WorkflowAgent:
         graph_builder.set_finish_point('investment_suggestion')
         self.graph = graph_builder.compile()
 
+    @opik.track(name="investment_workflow")
     async def ainvoke(self, state: AdvisorState):
-        return await self.graph.ainvoke(state)
+        """
+        Execute the investment workflow with Opik tracking.
+
+        This method is decorated with @opik.track to automatically log
+        inputs, outputs, and execution traces for evaluation.
+        """
+        result = await self.graph.ainvoke(state)
+        return result
 
     def recent_news(self, state: AdvisorState):
         search_query = f"Recent news about {state['ticker_symbol']} stock"
