@@ -1,8 +1,8 @@
 import json
 import traceback
 from typing import Optional
-from backend.app.models import InvestmentResponse
-from backend.app.cache import OverviewCache
+from .models import InvestmentResponse
+from .cache import OverviewCache
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_tavily import TavilySearch
@@ -12,6 +12,7 @@ from langgraph.constants import START
 from .models import Action, Overview, AdvisorState, RiskAppetite, SummaryResponse, WebSearchResult
 import opik
 from opik.rest_api.types.guardrail_write import GuardrailWrite
+from opik.integrations.langchain import OpikTracer
 
 class WorkflowAgent:
     overview_tool: BaseTool
@@ -19,6 +20,10 @@ class WorkflowAgent:
         self.overview_tool = overview_tool
         self.overview_cache = OverviewCache(ttl_days=7)
         self.opik_client = opik.Opik()
+
+        # Initialize Opik tracer for LangChain integration
+        self.opik_tracer = OpikTracer()
+
         self.tavily_client = TavilySearch(
             max_results=10,
             include_answer=False,
@@ -26,8 +31,14 @@ class WorkflowAgent:
             include_images=False,
             search_depth="basic",
         )
-        self.llm = init_chat_model("gpt-4o-mini", model_provider="openai")
-        
+
+        # Initialize LLM with Opik callback
+        self.llm = init_chat_model(
+            "gpt-4o-mini",
+            model_provider="openai",
+            model_kwargs={"callbacks": [self.opik_tracer]}
+        )
+
         # Final response chain
         response_model = self.llm.with_structured_output(InvestmentResponse)
         prompt = ChatPromptTemplate.from_template("""You are an educational research assistant that provides stock analysis for learning purposes.
@@ -103,10 +114,13 @@ Include sources in the summary.""")
     def web_search_results_summarization(self, state: AdvisorState):
         recent_news_results = state['recent_news_results']
         recent_news_results_str = "\n".join([res.to_prompt_segment() for res in recent_news_results])
-        summary = self.summary_chain.invoke({
-            'ticker_symbol': state['ticker_symbol'],
-            'recent_news_results': recent_news_results_str
-        })
+        summary = self.summary_chain.invoke(
+            {
+                'ticker_symbol': state['ticker_symbol'],
+                'recent_news_results': recent_news_results_str
+            },
+            config={"callbacks": [self.opik_tracer]}
+        )
         return {'recent_news_summary_result': summary}
     
     async def get_overview_indicators(self, state: AdvisorState):
@@ -174,13 +188,16 @@ Include sources in the summary.""")
     
     def investment_suggestion(self, state: AdvisorState):
         recent_news_summary_result = state['recent_news_summary_result']
-        response = self.response_chain.invoke({
-            'ticker_symbol': state['ticker_symbol'],
-            'risk_appetite': state['risk_appetite'].value,
-            'time_horizon': state['time_horizon'].value,
-            'recent_news_summary': recent_news_summary_result.summary,
-            'overview': state['overview'].to_prompt_segment()
-        })
+        response = self.response_chain.invoke(
+            {
+                'ticker_symbol': state['ticker_symbol'],
+                'risk_appetite': state['risk_appetite'].value,
+                'time_horizon': state['time_horizon'].value,
+                'recent_news_summary': recent_news_summary_result.summary,
+                'overview': state['overview'].to_prompt_segment()
+            },
+            config={"callbacks": [self.opik_tracer]}
+        )
         return {'response': response}
 
 
