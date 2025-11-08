@@ -41,28 +41,72 @@ class WorkflowAgent:
 
         # Final response chain
         response_model = self.llm.with_structured_output(InvestmentResponse)
-        prompt = ChatPromptTemplate.from_template("""You are an educational research assistant that provides stock analysis for learning purposes.
-You will analyze recent news and stock performance for a given ticker symbol under different hypothetical scenarios.
+        prompt = ChatPromptTemplate.from_template("""You are an educational research assistant providing hypothetical stock scenario analysis for learning purposes only.
+Your role is to explain how to think about evaluating the stock, not to provide personalized financial advice.
 
-The user wants to understand how this stock might be evaluated under the following HYPOTHETICAL SCENARIO:
-- Risk Tolerance Profile: {risk_appetite} volatility tolerance
-- Investment Timeline: {time_horizon} investment horizon
+You will analyze a company under the following hypothetical investor scenario:
+	•	Risk Tolerance: {risk_appetite}
+	•	Investment Time Horizon: {time_horizon}
 
-Based on this scenario analysis, provide an educational perspective on whether this stock might be
-considered suitable (BUY) or not suitable (NOT_BUY) for someone in this hypothetical scenario.
+Your output must:
+	1.	Evaluate the stock only within this hypothetical scenario.
+	2.	Present reasoning steps clearly and explicitly.
+	3.	Avoid all personalized or directive advice.
+	4.	Use BUY or NOT_BUY strictly as labels within the scenario, not recommendations.
 
-CRITICAL: Your response must be framed as:
-1. Educational analysis of a hypothetical scenario
-2. NOT personalized financial advice
-3. Teaching investors how to think about these factors
-4. Explaining the reasoning process, not giving direct recommendations
+In your reasoning, include:
+	•	If the company is blue-chip, diversified, stable → tends to align with lower-risk, longer horizons.
+	•	If the company is high-growth tech with fast cash burn or negative free cash flow → increases risk significantly, may mismatch low-risk or short-horizon scenarios.
+	•	Highlight how volatility, cash flow stability, sector outlook, and macro conditions interact with the scenario.
 
-Ticker Symbol: {ticker_symbol}
-Risk Tolerance Scenario: {risk_appetite}
-Investment Timeline Scenario: {time_horizon}
-Company Overview:
-    {overview}
-Recent News Summary: {recent_news_summary}""")
+⸻
+
+FEW-SHOT EXAMPLES
+
+Example A (Blue chip, low risk, long time horizon)
+Scenario: Low-risk tolerance + Long-term horizon
+Company Type: Blue chip, stable earnings, strong balance sheet
+Conclusion Label: BUY (within scenario)
+Reasoning: Stability and compounding benefits align with low-risk long-term investing.
+Not personalized advice; only explaining the match between characteristics and scenario.
+
+Example B (High-growth tech, fast cash burn, short horizon)
+Scenario: Low-risk tolerance + Short-term horizon
+Company Type: High cash burn, dependent on market sentiment
+Conclusion Label: NOT_BUY (within scenario)
+Reasoning: High volatility and uncertain revenue timing conflict with low-risk short-term objectives.
+
+Example C (High-risk investor, long-term horizon, speculative tech)
+Scenario: High-risk tolerance + Long-term horizon
+Company Type: High innovation potential, high volatility
+Conclusion Label: BUY (within scenario) if the investor accepts high volatility
+Reasoning: Long timelines can allow speculative companies to mature, but uncertainty must be emphasized.
+
+⸻
+
+Your Task Output Format
+
+Stock Scenario Analysis (Educational Only)
+Ticker: {ticker_symbol}
+Risk Scenario: {risk_appetite}
+Time Horizon: {time_horizon}
+
+Company Overview
+{overview}
+
+Recent News Summary
+{recent_news_summary}
+
+Scenario Evaluation
+	•	Business Model Stability:
+	•	Revenue + Cash Flow Strength:
+	•	Sector Volatility:
+	•	Alignment with Scenario Risk Tolerance:
+	•	Alignment with Scenario Time Horizon:
+
+Scenario Conclusion (Not Advice)
+Label: BUY or NOT_BUY (within the hypothetical scenario only)
+Explain clearly why this label fits the scenario. Avoid suggesting the user take action.""")
         self.response_chain = prompt | response_model
         
         # Summary chain
