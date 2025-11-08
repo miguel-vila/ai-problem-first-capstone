@@ -1732,7 +1732,7 @@ wheels = [
 
 [[package]]
 name = "litellm"
-version = "1.77.4"
+version = "1.77.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1743,22 +1743,15 @@ dependencies = [
     { name = "jinja2" },
     { name = "jsonschema" },
     { name = "openai" },
-    { name = "pondpond" },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/b7/0d3c6dbcff3064238d123f90ae96764a85352f3f5caab6695a55007fd019/litellm-1.77.4.tar.gz", hash = "sha256:ce652e10ecf5b36767bfdf58e53b2802e22c3de383b03554e6ee1a4a66fa743d", size = 10330773, upload-time = "2025-09-24T17:52:44.876Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/65/71fe4851709fa4a612e41b80001a9ad803fea979d21b90970093fd65eded/litellm-1.77.1.tar.gz", hash = "sha256:76bab5203115efb9588244e5bafbfc07a800a239be75d8dc6b1b9d17394c6418", size = 10275745, upload-time = "2025-09-13T21:05:21.377Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3c/32/90f8587818d146d604ed6eec95f96378363fda06b14817399cc68853383e/litellm-1.77.4-py3-none-any.whl", hash = "sha256:66c2bb776f1e19ceddfa977a2bbf7f05e6f26c4b1fec8b2093bd171d842701b8", size = 9138493, upload-time = "2025-09-24T17:52:40.764Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/dc/ff4f119cd4d783742c9648a03e0ba5c2b52fc385b2ae9f0d32acf3a78241/litellm-1.77.1-py3-none-any.whl", hash = "sha256:407761dc3c35fbcd41462d3fe65dd3ed70aac705f37cde318006c18940f695a0", size = 9067070, upload-time = "2025-09-13T21:05:18.078Z" },
 ]
-
-[[package]]
-name = "madoka"
-version = "0.7.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/da/eb/95288b1c4aa541eb296a6271e3f8c7ece03b78923ac47dbe95d2287d9f5e/madoka-0.7.1.tar.gz", hash = "sha256:e258baa84fc0a3764365993b8bf5e1b065383a6ca8c9f862fb3e3e709843fae7", size = 81413, upload-time = "2019-02-10T18:38:01.382Z" }
 
 [[package]]
 name = "markdown-it-py"
@@ -2243,7 +2236,7 @@ wheels = [
 
 [[package]]
 name = "opik"
-version = "1.8.74"
+version = "1.9.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "boto3-stubs", extra = ["bedrock-runtime"] },
@@ -2262,9 +2255,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "uuid6" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3b/31/887f133aa82aeb4cb8a01d98ad6ae73cb0580c2c9395d76bae1d67dbb6f6/opik-1.8.74.tar.gz", hash = "sha256:4b18248dbd741dab16dab399c1ab7197f1f6c6775ee06285ff07d3d22e1810de", size = 412504, upload-time = "2025-10-13T13:43:03.117Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/d8/535aa9b4592581178488af314a4fc3d5392a74d572830141355c83db53f0/opik-1.9.3.tar.gz", hash = "sha256:7bfbf682b546e2ef1b641d9605f1d30d18252c941128972ccdd01d69d4a3dec7", size = 510514, upload-time = "2025-11-07T13:58:12.901Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/5d/11c12e2471880effa7a597d96bce848271fa93007f7f543ed607fb31822a/opik-1.8.74-py3-none-any.whl", hash = "sha256:34ffbff2c447da117e58bcc2fdf53b3b534dd1ffe9a293eb912f5419fc9904c3", size = 772547, upload-time = "2025-10-13T13:43:01.29Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/15/bf46c014595c3fe4f14c13e483e8f80489f544f2b7e8d45cf8f9dfc58473/opik-1.9.3-py3-none-any.whl", hash = "sha256:a15b804391e0d359f3b37c864aa9cdb169691b28f3a0366c138690ef1a169793", size = 910404, upload-time = "2025-11-07T13:58:11.349Z" },
 ]
 
 [[package]]
@@ -2446,18 +2439,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412, upload-time = "2025-05-15T12:30:07.975Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538, upload-time = "2025-05-15T12:30:06.134Z" },
-]
-
-[[package]]
-name = "pondpond"
-version = "1.4.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "madoka" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/9b/8411458ca8ce8b5b9b135e4a19823f1caf958ca9985883db104323492982/pondpond-1.4.1.tar.gz", hash = "sha256:8afa34b869d1434d21dd2ec12644abc3b1733fcda8fcf355300338a13a79bb7b", size = 15237, upload-time = "2024-03-01T07:08:06.756Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/d4/f18d6985157cc68f76469480182cbee2a03a45858456955acf57f9dcbb4c/pondpond-1.4.1-py3-none-any.whl", hash = "sha256:641028ead4e8018ca6de1220c660ddd6d6fbf62a60e72f410655dd0451d82880", size = 14498, upload-time = "2024-03-01T07:08:04.63Z" },
 ]
 
 [[package]]
@@ -3668,7 +3649,7 @@ requires-dist = [
     { name = "langchain-tavily", specifier = "==0.2.12" },
     { name = "langgraph", specifier = "==0.4.5" },
     { name = "langgraph-prebuilt", specifier = "==0.2.2" },
-    { name = "opik", specifier = "==1.8.74" },
+    { name = "opik", specifier = "==1.9.3" },
     { name = "pydantic", specifier = ">=2.10.0" },
     { name = "python-dotenv", specifier = "==1.1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32.0" },

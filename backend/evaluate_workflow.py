@@ -21,19 +21,19 @@ from mcp.client.streamable_http import streamablehttp_client
 from langchain_mcp_adapters.tools import load_mcp_tools
 from dotenv import load_dotenv
 from opik.evaluation.metrics import BaseMetric
+from opik.evaluation.metrics.llm_judges.g_eval_presets import ComplianceRiskJudge
 
 # Load environment variables
 load_dotenv()
 
 
 # Custom metric: Check if suggested action matches expected
-
 class ActionMatchMetric(BaseMetric):
     def __init__(self):
         super().__init__(name="action_match", track=True)
     def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
         response = output.get("response")
-        print(f'output: {response.get("suggested_action")}, expected_output: {expected_output.get("suggested_action")}')
+        print(f'output: {response.get("suggested_action").value}, expected_output: {expected_output.get("suggested_action")}')
         """Check if the suggested action matches the expected action."""
         actual_action = response.get("suggested_action").value
         expected_action = expected_output.get("suggested_action")
@@ -67,6 +67,25 @@ class GuardrailCheckMetric(BaseMetric):
             reason=reason
         )
 
+class WrappedComplianceRiskJudge(BaseMetric):
+    def __init__(self):
+        super().__init__(name="reasoning_compliance_risk_judge", track=True)
+        self.judge = ComplianceRiskJudge(model="gpt-4", track=False)
+
+    def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
+        """Use ComplianceRiskJudge to evaluate the response."""
+        response = output.get("response")
+        reasoning = response.get("reasoning", "")
+
+        judge_result = self.judge.score(output=reasoning)
+
+        return ScoreResult(
+            name="reasoning_compliance_risk_judge",
+            value=judge_result.value,
+            reason=judge_result.reason,
+            metadata=judge_result.metadata,
+            scoring_failed=judge_result.scoring_failed
+        )
 
 # Task function that wraps the workflow
 async def evaluate_task(input_data: dict, workflow_agent: WorkflowAgent) -> dict:
@@ -161,7 +180,8 @@ async def run_evaluation(dataset_name: str):
                 task=lambda item: asyncio.run(task_wrapper(item)),
                 scoring_metrics=[
                     ActionMatchMetric(),
-                    GuardrailCheckMetric()
+                    GuardrailCheckMetric(),
+                    WrappedComplianceRiskJudge()
                 ],
                 experiment_name=f"workflow_eval_{dataset_name}"
             )

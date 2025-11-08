@@ -17,7 +17,7 @@ dependencies = [
     "langchain[openai]==0.3.25",
     "langgraph==0.4.5",
     "langgraph-prebuilt==0.2.2",
-    "opik==1.8.74",
+    "opik==1.9.3",
     "python-dotenv==1.1.0",
     "langchain-mcp-adapters>=0.1.12",
 ]
