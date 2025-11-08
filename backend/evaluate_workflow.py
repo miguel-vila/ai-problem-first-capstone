@@ -32,9 +32,10 @@ class ActionMatchMetric(BaseMetric):
     def __init__(self):
         super().__init__(name="action_match", track=True)
     def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
-        print(f'output: {output}, expected_output: {expected_output}')
+        response = output.get("response")
+        print(f'output: {response.get("suggested_action")}, expected_output: {expected_output.get("suggested_action")}')
         """Check if the suggested action matches the expected action."""
-        actual_action = output.get("suggested_action")
+        actual_action = response.get("suggested_action").value
         expected_action = expected_output.get("suggested_action")
 
         match = actual_action == expected_action
@@ -53,7 +54,7 @@ class GuardrailCheckMetric(BaseMetric):
         super().__init__(name="guardrail_check", track=True)
     def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
         """Check if guardrail was triggered (should be False for all scenarios)."""
-        guardrail_override = output.get("guardrail_override")
+        guardrail_override = output.get('response').get("guardrail_override")
 
         was_triggered = guardrail_override is not None
         score = 0.0 if was_triggered else 1.0
@@ -104,13 +105,13 @@ async def evaluate_task(input_data: dict, workflow_agent: WorkflowAgent) -> dict
 
     response = result.get('response')
     print(f'result for {input_data["ticker_symbol"]}: {response.suggested_action}')
-    output = {
+    response_dict = {
         'suggested_action': response.suggested_action,
         'reasoning': response.reasoning,
     }
     if hasattr(response, 'guardrail_override'):
-        output['guardrail_override'] = response.guardrail_override
-    return {'output': output}
+        response_dict['guardrail_override'] = response.guardrail_override
+    return {'output': {'response': response_dict}} # wrapped like this to match the runtime output format (so the online metric also works)
 
 
 async def run_evaluation(dataset_name: str):
