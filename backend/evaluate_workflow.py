@@ -32,10 +32,9 @@ class ActionMatchMetric(BaseMetric):
     def __init__(self):
         super().__init__(name="action_match", track=True)
     def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
-        response = output.get("response")
-        print(f'output: {response.get("suggested_action").value}, expected_output: {expected_output.get("suggested_action")}')
+        print(f'output: {output.get("suggested_action").value}, expected_output: {expected_output.get("suggested_action")}')
         """Check if the suggested action matches the expected action."""
-        actual_action = response.get("suggested_action").value
+        actual_action = output.get("suggested_action").value
         expected_action = expected_output.get("suggested_action")
 
         match = actual_action == expected_action
@@ -54,7 +53,7 @@ class GuardrailCheckMetric(BaseMetric):
         super().__init__(name="guardrail_check", track=True)
     def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
         """Check if guardrail was triggered (should be False for all scenarios)."""
-        guardrail_override = output.get('response').get("guardrail_override")
+        guardrail_override = output.get("guardrail_override")
 
         was_triggered = guardrail_override is not None
         score = 0.0 if was_triggered else 1.0
@@ -74,8 +73,7 @@ class WrappedComplianceRiskJudge(BaseMetric):
 
     def score(self, input: dict, expected_output: dict, output: dict, **ignored_kwargs):
         """Use ComplianceRiskJudge to evaluate the response."""
-        response = output.get("response")
-        reasoning = response.get("reasoning", "")
+        reasoning = output.get("reasoning", "")
 
         judge_result = self.judge.score(output=reasoning)
 
@@ -130,7 +128,8 @@ async def evaluate_task(input_data: dict, workflow_agent: WorkflowAgent) -> dict
     }
     if hasattr(response, 'guardrail_override'):
         response_dict['guardrail_override'] = response.guardrail_override
-    return {'output': {'response': response_dict}} # wrapped like this to match the runtime output format (so the online metric also works)
+    # wrapped and duplicated like this to match the runtime output format (so the online metrics also work)
+    return {'output': response_dict,  'response':response_dict, 'suggested_action': response.suggested_action, 'reasoning': response.reasoning}
 
 
 async def run_evaluation(dataset_name: str):
