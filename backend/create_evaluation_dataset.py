@@ -25,8 +25,7 @@ evaluation_scenarios = [
         "risk_appetite": "Low",
         "time_horizon": "Long-term",
         "expected_action": "Buy",
-        "rationale": "Low beta defensive stock suitable for conservative investors",
-        "expected_beta": 0.6
+        "rationale": "Low beta defensive stock suitable for conservative investors"
     },
 
     # 2. Low Risk + Healthcare Blue Chip
@@ -35,8 +34,7 @@ evaluation_scenarios = [
         "risk_appetite": "Low",
         "time_horizon": "Medium-term",
         "expected_action": "Buy",
-        "rationale": "Stable healthcare giant with consistent dividends",
-        "expected_beta": 0.7
+        "rationale": "Stable healthcare giant with consistent dividends"
     },
 
     # 3. Low Risk + Consumer Staples
@@ -45,8 +43,7 @@ evaluation_scenarios = [
         "risk_appetite": "Low",
         "time_horizon": "Long-term",
         "expected_action": "Buy",
-        "rationale": "Defensive consumer staples with stable cash flows",
-        "expected_beta": 0.5
+        "rationale": "Defensive consumer staples with stable cash flows"
     },
 
     # 4. Medium Risk + Established Tech
@@ -55,8 +52,7 @@ evaluation_scenarios = [
         "risk_appetite": "Medium",
         "time_horizon": "Medium-term",
         "expected_action": "Buy",
-        "rationale": "Strong fundamentals, moderate volatility, market leader",
-        "expected_beta": 0.9
+        "rationale": "Strong fundamentals, moderate volatility, market leader"
     },
 
     # 5. Medium Risk + Diversified Tech
@@ -65,8 +61,7 @@ evaluation_scenarios = [
         "risk_appetite": "Medium",
         "time_horizon": "Long-term",
         "expected_action": "Buy",
-        "rationale": "Market leader with strong ecosystem and financials",
-        "expected_beta": 1.0
+        "rationale": "Market leader with strong ecosystem and financials"
     },
 
     # 6. High Risk + Growth Tech
@@ -75,8 +70,7 @@ evaluation_scenarios = [
         "risk_appetite": "High",
         "time_horizon": "Long-term",
         "expected_action": "Buy",
-        "rationale": "High growth potential in AI/semiconductors for aggressive investors",
-        "expected_beta": 1.7
+        "rationale": "High growth potential in AI/semiconductors for aggressive investors"
     },
 
     # 7. High Risk + EV Leader
@@ -85,8 +79,7 @@ evaluation_scenarios = [
         "risk_appetite": "High",
         "time_horizon": "Medium-term",
         "expected_action": "Buy",
-        "rationale": "High volatility acceptable for high risk tolerance",
-        "expected_beta": 2.0
+        "rationale": "High volatility acceptable for high risk tolerance"
     },
 
     # 8. Medium Risk + Financial Services
@@ -95,8 +88,7 @@ evaluation_scenarios = [
         "risk_appetite": "Medium",
         "time_horizon": "Long-term",
         "expected_action": "Buy",
-        "rationale": "Strong payment network with consistent growth",
-        "expected_beta": 0.95
+        "rationale": "Strong payment network with consistent growth"
     },
 
     # === NOT_BUY Scenarios (7 total) ===
@@ -107,8 +99,7 @@ evaluation_scenarios = [
         "risk_appetite": "Medium",
         "time_horizon": "Short-term",
         "expected_action": "Not Buy",
-        "rationale": "Negative earnings/user growth trends, competitive pressures",
-        "expected_beta": 1.5
+        "rationale": "Negative earnings/user growth trends, competitive pressures"
     },
 
     # 10. Medium Risk + Declining Video Conferencing
@@ -117,8 +108,7 @@ evaluation_scenarios = [
         "risk_appetite": "Medium",
         "time_horizon": "Short-term",
         "expected_action": "Not Buy",
-        "rationale": "Post-pandemic decline, valuation concerns, slowing growth",
-        "expected_beta": 1.2
+        "rationale": "Post-pandemic decline, valuation concerns, slowing growth"
     },
 
     # 11. High Risk + Speculative EV Startup
@@ -127,8 +117,7 @@ evaluation_scenarios = [
         "risk_appetite": "High",
         "time_horizon": "Short-term",
         "expected_action": "Not Buy",
-        "rationale": "Cash burn concerns, production challenges despite risk tolerance",
-        "expected_beta": 1.8
+        "rationale": "Cash burn concerns, production challenges despite risk tolerance"
     },
 
     # # 12. Medium Risk + Struggling Fintech
@@ -138,7 +127,7 @@ evaluation_scenarios = [
     #     "time_horizon": "Short-term",
     #     "expected_action": "Not Buy",
     #     "rationale": "Regulatory concerns, profitability challenges",
-    #     "expected_beta": 1.6
+
     # },
 
     # 13. Low Risk + Struggling Retail
@@ -147,8 +136,7 @@ evaluation_scenarios = [
         "risk_appetite": "Low",
         "time_horizon": "Short-term",
         "expected_action": "Not Buy",
-        "rationale": "Declining retail sector, e-commerce pressure",
-        "expected_beta": 0.9
+        "rationale": "Declining retail sector, e-commerce pressure"
     },
 
     # 14. Medium Risk + Overvalued Streaming
@@ -157,8 +145,7 @@ evaluation_scenarios = [
         "risk_appetite": "Medium",
         "time_horizon": "Short-term",
         "expected_action": "Not Buy",
-        "rationale": "High valuation, intense competition, subscriber growth concerns",
-        "expected_beta": 1.2
+        "rationale": "High valuation, intense competition, subscriber growth concerns"
     },
 
     # 15. High Risk + Volatile Biotech
@@ -167,8 +154,7 @@ evaluation_scenarios = [
         "risk_appetite": "High",
         "time_horizon": "Short-term",
         "expected_action": "Not Buy",
-        "rationale": "Post-COVID decline in vaccine revenue, pipeline uncertainty",
-        "expected_beta": 1.5
+        "rationale": "Post-COVID decline in vaccine revenue, pipeline uncertainty"
     }
 ]
 
@@ -212,14 +198,13 @@ def create_dataset():
             "metadata": {
                 "scenario_id": idx,
                 "rationale": scenario["rationale"],
-                "expected_beta": scenario["expected_beta"],
                 "risk_appetite": scenario["risk_appetite"],
                 "time_horizon": scenario["time_horizon"]
             }
         }
         items.append(item)
 
-        print(f"  {idx}. {scenario['ticker_symbol']:6} | Risk: {scenario['risk_appetite']:6} | Expected: {expected_action:8} | Beta: ~{scenario['expected_beta']}")
+        print(f"  {idx}. {scenario['ticker_symbol']:6} | Risk: {scenario['risk_appetite']:6} | Expected: {expected_action:8}")
 
     # Insert all items
     dataset.insert(items)
