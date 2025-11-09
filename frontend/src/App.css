@@ -145,6 +145,19 @@ label {
   font-style: italic;
 }
 
+.required-badge {
+  display: inline-block;
+  background: #ff6b6b;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .scenario-info {
   background: #e8eef7;
   border-left: 4px solid #667eea;

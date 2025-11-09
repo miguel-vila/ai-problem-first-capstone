@@ -2,6 +2,9 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
+  // Check if running in development mode
+  const isDevelopment = import.meta.env.DEV
+
   const [formData, setFormData] = useState({
     ticker_symbol: '',
     risk_appetite: 'Medium',
@@ -74,24 +77,25 @@ function App() {
         <h1>Trading Bot - Educational Stock Analysis</h1>
         <p className="subtitle">Learn about stock analysis with AI-powered insights</p>
 
-        <div className="settings-section">
-          <button
-            type="button"
-            className="settings-toggle"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            {showSettings ? '▼' : '▶'} API Settings
-          </button>
+        {!isDevelopment && (
+          <div className="settings-section">
+            <button
+              type="button"
+              className="settings-toggle"
+              onClick={() => setShowSettings(!showSettings)}
+            >
+              {showSettings ? '▼' : '▶'} API Settings (Required)
+            </button>
 
-          {showSettings && (
-            <div className="settings-panel">
-              <p className="settings-description">
-                Configure your API keys below. If left empty, the application will use server-side keys (if available).
-              </p>
+            {showSettings && (
+              <div className="settings-panel">
+                <p className="settings-description">
+                  ⚠️ API keys are required to use this application. Get your free API keys from the links below.
+                </p>
 
               <div className="form-group">
                 <label htmlFor="tavily_api_key">
-                  Tavily API Key
+                  Tavily API Key <span className="required-badge">Required</span>
                   <span className="field-help">For web search capabilities</span>
                 </label>
                 <input
@@ -100,7 +104,8 @@ function App() {
                   name="tavily_api_key"
                   value={apiKeys.tavily_api_key}
                   onChange={handleApiKeyChange}
-                  placeholder="Enter your Tavily API key (optional)"
+                  placeholder="Enter your Tavily API key"
+                  required
                 />
                 <a
                   href="https://tavily.com/"
@@ -114,7 +119,7 @@ function App() {
 
               <div className="form-group">
                 <label htmlFor="openai_api_key">
-                  OpenAI API Key
+                  OpenAI API Key <span className="required-badge">Required</span>
                   <span className="field-help">For AI-powered analysis</span>
                 </label>
                 <input
@@ -123,7 +128,8 @@ function App() {
                   name="openai_api_key"
                   value={apiKeys.openai_api_key}
                   onChange={handleApiKeyChange}
-                  placeholder="Enter your OpenAI API key (optional)"
+                  placeholder="Enter your OpenAI API key"
+                  required
                 />
                 <a
                   href="https://platform.openai.com/api-keys"
@@ -137,7 +143,7 @@ function App() {
 
               <div className="form-group">
                 <label htmlFor="alpha_vantage_api_key">
-                  Alpha Vantage API Key
+                  Alpha Vantage API Key <span className="required-badge">Required</span>
                   <span className="field-help">For financial data access</span>
                 </label>
                 <input
@@ -146,7 +152,8 @@ function App() {
                   name="alpha_vantage_api_key"
                   value={apiKeys.alpha_vantage_api_key}
                   onChange={handleApiKeyChange}
-                  placeholder="Enter your Alpha Vantage API key (optional)"
+                  placeholder="Enter your Alpha Vantage API key"
+                  required
                 />
                 <a
                   href="https://www.alphavantage.co/support/#api-key"
@@ -158,8 +165,9 @@ function App() {
                 </a>
               </div>
             </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">
