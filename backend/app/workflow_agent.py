@@ -16,7 +16,12 @@ from opik.integrations.langchain import OpikTracer
 
 class WorkflowAgent:
     overview_tool: BaseTool
-    def __init__(self, overview_tool: BaseTool):
+    def __init__(
+        self,
+        overview_tool: BaseTool,
+        tavily_api_key: str,
+        openai_api_key: str
+    ):
         self.overview_tool = overview_tool
         self.overview_cache = OverviewCache(ttl_days=7)
         self.opik_client = opik.Opik()
@@ -24,7 +29,9 @@ class WorkflowAgent:
         # Initialize Opik tracer for LangChain integration
         self.opik_tracer = OpikTracer()
 
+        # Initialize Tavily client with provided API key
         self.tavily_client = TavilySearch(
+            api_key=tavily_api_key,
             max_results=10,
             include_answer=False,
             include_raw_content=True,
@@ -32,10 +39,11 @@ class WorkflowAgent:
             search_depth="basic",
         )
 
-        # Initialize LLM with Opik callback
+        # Initialize LLM with Opik callback and provided API key
         self.llm = init_chat_model(
             "gpt-4o-mini",
             model_provider="openai",
+            api_key=openai_api_key,
             model_kwargs={"callbacks": [self.opik_tracer]}
         )
 

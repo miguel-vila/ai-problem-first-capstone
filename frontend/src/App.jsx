@@ -7,10 +7,16 @@ function App() {
     risk_appetite: 'Medium',
     time_horizon: 'Medium-term'
   })
+  const [apiKeys, setApiKeys] = useState({
+    tavily_api_key: '',
+    openai_api_key: '',
+    alpha_vantage_api_key: ''
+  })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showWorkflow, setShowWorkflow] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -19,12 +25,20 @@ function App() {
     setResult(null)
 
     try {
+      // Combine form data with API keys, only including non-empty keys
+      const requestData = {
+        ...formData,
+        ...(apiKeys.tavily_api_key && { tavily_api_key: apiKeys.tavily_api_key }),
+        ...(apiKeys.openai_api_key && { openai_api_key: apiKeys.openai_api_key }),
+        ...(apiKeys.alpha_vantage_api_key && { alpha_vantage_api_key: apiKeys.alpha_vantage_api_key })
+      }
+
       const response = await fetch('/generate-strategy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(requestData)
       })
 
       if (!response.ok) {
@@ -47,11 +61,105 @@ function App() {
     })
   }
 
+  const handleApiKeyChange = (e) => {
+    setApiKeys({
+      ...apiKeys,
+      [e.target.name]: e.target.value
+    })
+  }
+
   return (
     <div className="app">
       <div className="container">
         <h1>Trading Bot - Educational Stock Analysis</h1>
         <p className="subtitle">Learn about stock analysis with AI-powered insights</p>
+
+        <div className="settings-section">
+          <button
+            type="button"
+            className="settings-toggle"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            {showSettings ? '▼' : '▶'} API Settings
+          </button>
+
+          {showSettings && (
+            <div className="settings-panel">
+              <p className="settings-description">
+                Configure your API keys below. If left empty, the application will use server-side keys (if available).
+              </p>
+
+              <div className="form-group">
+                <label htmlFor="tavily_api_key">
+                  Tavily API Key
+                  <span className="field-help">For web search capabilities</span>
+                </label>
+                <input
+                  type="password"
+                  id="tavily_api_key"
+                  name="tavily_api_key"
+                  value={apiKeys.tavily_api_key}
+                  onChange={handleApiKeyChange}
+                  placeholder="Enter your Tavily API key (optional)"
+                />
+                <a
+                  href="https://tavily.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="api-link"
+                >
+                  Get Tavily API Key →
+                </a>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="openai_api_key">
+                  OpenAI API Key
+                  <span className="field-help">For AI-powered analysis</span>
+                </label>
+                <input
+                  type="password"
+                  id="openai_api_key"
+                  name="openai_api_key"
+                  value={apiKeys.openai_api_key}
+                  onChange={handleApiKeyChange}
+                  placeholder="Enter your OpenAI API key (optional)"
+                />
+                <a
+                  href="https://platform.openai.com/api-keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="api-link"
+                >
+                  Get OpenAI API Key →
+                </a>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="alpha_vantage_api_key">
+                  Alpha Vantage API Key
+                  <span className="field-help">For financial data access</span>
+                </label>
+                <input
+                  type="password"
+                  id="alpha_vantage_api_key"
+                  name="alpha_vantage_api_key"
+                  value={apiKeys.alpha_vantage_api_key}
+                  onChange={handleApiKeyChange}
+                  placeholder="Enter your Alpha Vantage API key (optional)"
+                />
+                <a
+                  href="https://www.alphavantage.co/support/#api-key"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="api-link"
+                >
+                  Get Alpha Vantage API Key →
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">

@@ -24,6 +24,9 @@ class InvestmentRequest(BaseModel):
     ticker_symbol: str = Field(..., description="Stock ticker symbol (e.g., AAPL, MSFT)")
     risk_appetite: RiskAppetite
     time_horizon: TimeHorizon
+    tavily_api_key: Optional[str] = Field(None, description="Optional Tavily API key for web search")
+    openai_api_key: Optional[str] = Field(None, description="Optional OpenAI API key for AI analysis")
+    alpha_vantage_api_key: Optional[str] = Field(None, description="Optional Alpha Vantage API key for financial data")
 
 
 class Action(str, Enum):

@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, Response
 from dotenv import load_dotenv
-from .workflow_agent import WorkflowAgent
 from .models import InvestmentRequest, ServiceResponse
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
@@ -26,7 +25,8 @@ async def lifespan(app: FastAPI):
 
             tools = await load_mcp_tools(session)
             overview_tool = [tool for tool in tools if tool.name == 'COMPANY_OVERVIEW'][0]
-            app.state.workflow = WorkflowAgent(overview_tool=overview_tool)
+            # Store the overview_tool in app.state for use in requests
+            app.state.overview_tool = overview_tool
             yield
     
 app = FastAPI(
@@ -57,12 +57,57 @@ async def generate_strategy(request: InvestmentRequest, response: Response):
     """
     Generate investment strategy based on user inputs.
 
-    This is a placeholder implementation. The actual AI logic will be
-    implemented in future iterations.
+    In production, API keys must be provided in the request.
+    In local development, API keys fall back to environment variables.
     """
-    # Placeholder logic - to be replaced with actual AI implementation
-    
-    workflow_result = await app.state.workflow.ainvoke({
+    from .workflow_agent import WorkflowAgent
+    from fastapi import HTTPException
+
+    is_local = os.getenv("ENVIRONMENT") != "production"
+
+    # Handle API keys based on environment
+    if is_local:
+        # Local: fall back to environment variables
+        tavily_api_key = request.tavily_api_key or os.getenv("TAVILY_API_KEY")
+        openai_api_key = request.openai_api_key or os.getenv("OPENAI_API_KEY")
+
+        # Even in local mode, we still need the keys from somewhere
+        if not tavily_api_key or not openai_api_key:
+            missing_keys = []
+            if not tavily_api_key:
+                missing_keys.append("TAVILY_API_KEY")
+            if not openai_api_key:
+                missing_keys.append("OPENAI_API_KEY")
+
+            raise HTTPException(
+                status_code=500,
+                detail=f"Server configuration error: Missing environment variables: {', '.join(missing_keys)}. Please configure your .env file."
+            )
+    else:
+        # Production: require API keys from request
+        tavily_api_key = request.tavily_api_key
+        openai_api_key = request.openai_api_key
+
+        if not tavily_api_key or not openai_api_key:
+            missing_keys = []
+            if not tavily_api_key:
+                missing_keys.append("tavily_api_key")
+            if not openai_api_key:
+                missing_keys.append("openai_api_key")
+
+            raise HTTPException(
+                status_code=400,
+                detail=f"Missing required API keys: {', '.join(missing_keys)}. Please configure your API keys in the settings panel."
+            )
+
+    # Create a new WorkflowAgent instance with the API keys
+    workflow = WorkflowAgent(
+        overview_tool=app.state.overview_tool,
+        tavily_api_key=tavily_api_key,
+        openai_api_key=openai_api_key
+    )
+
+    workflow_result = await workflow.ainvoke({
         'ticker_symbol': request.ticker_symbol,
         'risk_appetite': request.risk_appetite,
         'time_horizon': request.time_horizon
@@ -75,7 +120,7 @@ async def generate_strategy(request: InvestmentRequest, response: Response):
             sources=workflow_result['recent_news_summary_result'].sources,
             guardrail_override=workflow_result['guardrails_override']
         )
-        
+
     return ServiceResponse(
         suggested_action=workflow_result['response'].suggested_action,
         reasoning=workflow_result['response'].reasoning,
